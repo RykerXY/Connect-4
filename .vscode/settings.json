@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "4 in a Row.sln"
+    "dotnet.defaultSolution": "Connect-4.sln"
 }
