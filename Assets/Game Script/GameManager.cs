@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -12,13 +11,15 @@ public class GameManager : MonoBehaviour
     public GameObject redTokenPrefab;
     public GameObject blueTokenPrefab;
 
+    public GameObject resultUI;
+
     public float bounceHeight = 0.2f; // Height of the bounce
     public float bounceTime = 0.1f; // Duration of the bounce
 
     public bool gameOver = false; // Flag to check if the game is over
 
     public TextMeshProUGUI winText;
-    public GameObject nextButton;
+    public AudioSource coinDrop;
 
     private void Awake()
     {
@@ -37,16 +38,14 @@ public class GameManager : MonoBehaviour
             if (CheckWin(currentPlayer))
             {
                 gameOver = true;
+                resultUI.SetActive(true);
                 winText.text = $"Player {currentPlayer} wins!";
-                winText.gameObject.SetActive(true);
-                nextButton.SetActive(true);
                 Debug.Log($"Player {currentPlayer} wins!");
             }
             else if (CheckDraw())
             {
                 gameOver = true;
-                winText.gameObject.SetActive(true);
-                nextButton.SetActive(true);
+                resultUI.SetActive(true);
                 winText.text = $"Player {currentPlayer} wins!";
                 Debug.Log("It's a draw!");
             }
@@ -185,7 +184,7 @@ public class GameManager : MonoBehaviour
 
         // Instantiate the token at the starting position
         GameObject token = Instantiate(tokenPrefab, startPosition, Quaternion.identity);
-        token.transform.SetParent(transform, true); // Optional: Set the parent for clean hierarchy
+        token.transform.SetParent(transform, true); 
 
         // Start the animation to move the token to its final position
         StartCoroutine(DropTokenAnimation(token, finalPosition));
@@ -225,5 +224,6 @@ public class GameManager : MonoBehaviour
 
         // Return the token to its final resting position
         token.transform.position = finalPosition;
+        coinDrop.Play();
         }
     }
