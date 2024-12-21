@@ -20,6 +20,16 @@ public class GameManager : MonoBehaviour
 
     public TextMeshProUGUI winText;
     public AudioSource coinDrop;
+    public AudioSource Win;
+    public AudioSource Bass;
+    public AudioSource Instrument;
+    public AudioSource Melody;
+
+    public CanvasGroup FadeInCanvasGroup;
+    public float fadeDuration = 1f; 
+    public int player1CoinCount = 0;
+    public int player2CoinCount = 0;
+    public int totalCoins = 0;
 
     private void Awake()
     {
@@ -28,24 +38,52 @@ public class GameManager : MonoBehaviour
 
     public void OnColumnSelected(int column)
     {
+        if(totalCoins == 6)
+        {
+             StartCoroutine(FadeInCoroutine(Bass));
+        }
+        if(totalCoins == 15)
+        {
+             StartCoroutine(FadeInCoroutine(Instrument));
+        }
+        if(totalCoins == 30)
+        {
+             StartCoroutine(FadeInCoroutine(Melody));
+        }
         //Debug.Log($"Column {column} selected");
         if (gameOver) 
             Debug.Log("Game over!");
         // Drop the token into the column
         else if (DropToken(column, currentPlayer))
         {
+            if (currentPlayer == 1)
+            {
+                player1CoinCount++;
+                totalCoins++;
+            }
+            else if (currentPlayer == 2)
+            {
+                player2CoinCount++;
+                totalCoins++;
+            }
+
+            Debug.Log($"\nPlayer 1 Coins: {player1CoinCount}, \nPlayer 2 Coins: {player2CoinCount}\nPlayer {currentPlayer}'s turn is over.");
             // Check for win or draw
             if (CheckWin(currentPlayer))
             {
+                Win.Play();
                 gameOver = true;
                 resultUI.SetActive(true);
+                StartCoroutine(FadeCanvasGroup(0f, 1f));
                 winText.text = $"Player {currentPlayer} wins!";
                 Debug.Log($"Player {currentPlayer} wins!");
             }
             else if (CheckDraw())
             {
+                Win.Play();
                 gameOver = true;
                 resultUI.SetActive(true);
+                StartCoroutine(FadeCanvasGroup(0f, 1f));
                 winText.text = $"Player {currentPlayer} wins!";
                 Debug.Log("It's a draw!");
             }
@@ -74,7 +112,7 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log($"Player {player}'s turn is over.");
+                    //Debug.Log($"Player {player}'s turn is over.");
                     // Switch to the next player
                 }
             
@@ -226,4 +264,34 @@ public class GameManager : MonoBehaviour
         token.transform.position = finalPosition;
         coinDrop.Play();
         }
+    private System.Collections.IEnumerator FadeCanvasGroup(float startAlpha, float targetAlpha)
+    {
+        float elapsedTime = 0f;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / fadeDuration);
+            FadeInCanvasGroup.alpha = alpha;
+            yield return null;
+        }
+
+        FadeInCanvasGroup.alpha = targetAlpha;
     }
+
+    private IEnumerator FadeInCoroutine(AudioSource audioSource)
+    {
+        float startVolume = audioSource.volume;
+        float timeElapsed = 0f;
+        float targetVolume = 0.5f;
+
+        while (timeElapsed < fadeDuration)
+        {
+            timeElapsed += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(startVolume, targetVolume, timeElapsed / fadeDuration);
+            yield return null; // Wait until the next frame
+        }
+
+        audioSource.volume = targetVolume; // Ensure it reaches the target volume
+    }
+}
